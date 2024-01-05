@@ -43,6 +43,22 @@ Again, since delta X is small, x3 becomes very small fast.
 dV/dX=3x(squared)
 
 - Once we found expressions for the derivative of A(x) and V(x), we were able to use them to find the growth rate of a square or a cube for any side length.
+
+## Applying derivate optimizatoin
+
+- Business example
+![business_example.png](./business_example.png "business_example.png")
+- We can see that at slope of tangent at max, value is 0
+- The graph shows the revenue R for different prices p for the function R(p)=p(16−p). We got this, buy looking at values we got from earlier questions.
+- To find the derivative, consider two points
+![derivate_optimization.png](./derivate_optimization.png)
+- slope of secant lines = dR/dP.
+- ![derivative_calculation.png](./derivative_calculation.png)
+![derivetive_2.png](./derivetive_2.png)
+![ce2d90fc59dc51f60950e5ac5ea65ca4.png](./ce2d90fc59dc51f60950e5ac5ea65ca4.png)
+![57a2fa2ee27751bcabd4f6f93751a60e.png](./57a2fa2ee27751bcabd4f6f93751a60e.png)
+- SO we figured out that when price ois 8, max revinuew will be 64k, previousy we thought it was good if it was 7, so now we got exact value.
+- ![abc7a82cfb7e1cb72c73c61bc42aa9d3.png](./abc7a82cfb7e1cb72c73c61bc42aa9d3.png)
 <!--StartFragment-->
 
 **Calculus** — developed in the 17th century — is the mathematical study of change.
