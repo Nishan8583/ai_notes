@@ -8,16 +8,22 @@ from keras.optimizers import Adam
 pixels = []
 labels=[]
 
+# directory that contains the dataset
 dir = "smiles_dataset/training_set/"
-for filename in os.listdir(dir):
-    image = Image.open(dir+filename).convert('1')
-    pixels.append(list(image.getdata()))
 
-    # one hot encoding happy (1,0), and sad (0,1)
-    if filename.startswith("happy"):
-        labels.append([1,0])
-    else:
-        labels.append([0,1])
+# populates the pixels and labes
+def populate_features(pixels,labels):
+    for filename in os.listdir(dir):
+        image = Image.open(dir+filename).convert('1')
+        pixels.append(list(image.getdata()))
+
+        # one hot encoding happy (1,0), and sad (0,1)
+        if filename.startswith("happy"):
+            labels.append([1,0])
+        else:
+            labels.append([0,1])
+
+populate_features(pixels,labels)
 
 labels = np.array(labels)
 pixels = np.array(pixels)
@@ -37,3 +43,10 @@ model.compile(loss="categorical_crossentropy",
               optimizer=Adam(lr=0.05),metrics=["accuracy"])
 
 model.fit(pixels,labels,epochs=1000,batch_size=20,verbose=2)
+
+print("Now testing")
+
+test_pixel = []
+test_labels = []
+populate_features(test_pixel,test_labels)
+print(model.predict(test_pixel))
