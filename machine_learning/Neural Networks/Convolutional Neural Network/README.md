@@ -99,5 +99,13 @@ Sliding window protocol:
 - `softmax activation` to classify outputs.
 - We use `gradient dscent` (backpropagation) as usual.
 
+#### Data augmentation
+- random transofrmation on images, (rotations, flipping, scaling)
+- good for images
+- we get huge data to test on
+- Helps prevent overfitting, since never same data on train.
+
+
 #### Math reference
 https://www.math.univ-toulouse.fr/~besse/Wikistat/pdf/st-m-hdstat-rnn-deep-learning.pdf 
+
