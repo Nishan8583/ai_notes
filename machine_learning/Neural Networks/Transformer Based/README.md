@@ -18,3 +18,5 @@
 - optimized version of LLAMA-2 
 - conda create ?
 
+## Random youtube videos
+[LLAMA medical bot project](https://youtu.be/kXuHxI5ZcG0?si=4euSa1K9dd8ZL6-b)
