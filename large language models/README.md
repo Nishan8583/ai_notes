@@ -8,6 +8,8 @@
 - Neural network, next word prediction, predicting what the next word might be.
 - The network (LLAMA) "dreams" internet documents, because trained on internet documents.
 - Some of info may be memorized, some not.
+- This [article](https://huggingface.co/docs/transformers/v4.32.1/llm_tutorial) form Hugging face is very good as well.
+- This one is a good series as well [GeeksforGeeks](https://www.geeksforgeeks.org/natural-language-processing-nlp-tutorial/?ref=lbp).
 
 # How does it work?
 - Billions of parameters, we just adjust it, so that the network as a whole outputs what we want.

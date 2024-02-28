@@ -1,4 +1,7 @@
 # AI
+- References:
+    - [GeekForGeeks](https://www.geeksforgeeks.org/machine-learning/?ref=shm)
+    - [Udemy Course](https://actalent.udemy.com/course/introduction-to-machine-learning-in-python/)
 ## Types
 - supervised: provide labelled datasets.
 - unsupervised: no labelled datasets, machine learning algorithm finds relationship, ex: clustering algorithms
