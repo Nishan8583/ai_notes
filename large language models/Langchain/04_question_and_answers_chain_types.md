@@ -151,26 +151,3 @@ index = VectorstoreIndexCreator(
 ).from_loaders([loader])
 response = index.query(query, llm=llm)
 ```
-
-# Chain Types
-## stuff
-![chain_type_stuff.png](./chain_type_stuff.png)
-
-- For large documents, many chunks, so stuff method might not be good.
-## map_reduce
-- `map_reduce`, passes all the chunks with questions to LLM, gets the response, another LLM call to summarize the responses.
-- More calls, so a bit slow
-- Treats each documents as independent, which might not be the correct choice.
-- Good for summarization.
-![map_reduce.png](./map_reduce.png)
-
-## Refine
-- Similar more chunks, but does it iteratively. Uses one chunks gets its answer, then uses that as input for another LLM query.
-- Good for combining information, and gives longer anwers.
-- Similar amount of calls, but query are not independent. Takes longer than map_reduce.
-![refine.png](./refine.png)
-
-## Map_rerank
-- Ask LLM to give score for relativity, and select the highest one.
-- Relies on LLM.
-![map_rerank.png](./map_rerank.png)
