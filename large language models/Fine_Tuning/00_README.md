@@ -13,3 +13,4 @@
 ![benifits_of_fine_tuning.png](./benifits_of_fine_tuning.png)
 - [fine_tuning_lab](01_Why_finetuning_lab_student.md)
 - [pre_training_and_fine_tuning_process](02_The_Process.md)
+- [Interesting Source](https://www.datacamp.com/tutorial/fine-tuning-llama-2)
