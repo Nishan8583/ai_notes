@@ -17,7 +17,7 @@ def load_module_gpu(model_path):
     llm = CTransformers(
         model=model_path,
         model_type="llama",
-        max_new_token=6000,
+        max_new_token=1000,
         temperature=0.0,
         config={"gpu_layers":50}, # Now GPU works, yipeeee
     )
