@@ -1,0 +1,11 @@
+torch
+transformers
+sentence-transformers
+datasets
+soundfile
+librosa
+gradio
+timm
+inflect
+phonemizer
+py-espeak-ng
