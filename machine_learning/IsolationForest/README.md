@@ -48,6 +48,7 @@ Do this recursively until:
 
         How many splits were needed to isolate it?
 
+
 3. Score anomaly
 
     Shorter average path length = more anomalous.
