@@ -63,6 +63,12 @@ type Function struct {
 	Description string     `json:"description"`
 	Parameters  Parameters `json:"parameters"`
 }
+
+type ollamaResponseFunction struct {
+	Name        string          `json:"name"`
+	Description string          `json:"description"`
+	Arguments   json.RawMessage `json:"arguments"`
+}
 type Tools struct {
 	Type     string   `json:"type"`
 	Function Function `json:"function"`
@@ -171,8 +177,12 @@ func handleToolCalls(url string, ollamaReq *ollamaRequest, ollamaResp *ollamaRes
 	cur_resp := ollamaResp
 	maxIterations := 5
 	curIter := 0
-	for len(cur_resp.Message.ToolCalls) != 0 || curIter != maxIterations { // if LLM responded with some Tool Calls
+	for len(cur_resp.Message.ToolCalls) != 0 { // if LLM responded with some Tool Calls
 		curIter += 1
+		if curIter >= maxIterations {
+			fmt.Println("Reached max iteration breaking")
+			break
+		}
 		for _, v := range cur_resp.Message.ToolCalls { // Loop through all the tool calls
 			switch v.Function.Name {
 			case "ip_threat_lookup": // For IP threat lookup do this
@@ -201,7 +211,7 @@ func handleToolCalls(url string, ollamaReq *ollamaRequest, ollamaResp *ollamaRes
 		if err != nil {
 			return nil, err
 		}
-
+		fmt.Printf("\n--------------Actual final String: %s\n------------", string(b))
 		req, err := http.NewRequest(http.MethodPost, url, bytes.NewReader(b))
 		if err != nil {
 			return nil, err
@@ -227,7 +237,9 @@ func handleToolCalls(url string, ollamaReq *ollamaRequest, ollamaResp *ollamaRes
 			return nil, err
 		}
 		cur_resp = nextResp
-
+		fmt.Printf("---------------LLM RESPONSE-----------------------\n")
+		fmt.Printf("%+v\n", cur_resp)
+		fmt.Printf("--------------------------------------------------\n")
 		resp.Body.Close()
 	}
 

@@ -5,9 +5,9 @@ import (
 )
 
 type ToolCalls struct {
-	ID       string   `json:"id"`
-	Type     string   `json:"type"`
-	Function Function `json:"function"`
+	ID       string                 `json:"id"`
+	Type     string                 `json:"type"`
+	Function ollamaResponseFunction `json:"function"`
 }
 
 type ollamaResponseStruct struct {
