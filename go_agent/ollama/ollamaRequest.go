@@ -3,6 +3,7 @@ package ollama
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"time"
@@ -28,6 +29,8 @@ const defaultReqBody = `{
 }`
 const DefaultOllamaURL = "http://127.0.0.1:11434"
 
+var ErrEmptyOllamaStructValue = errors.New("nil value for ollama response or request struct")
+
 // ollamaRequest is the request we send to ollama
 type ollamaRequest struct {
 	Model    string          `json:"model"`
@@ -36,9 +39,13 @@ type ollamaRequest struct {
 	Stream   bool            `json:"stream"`
 }
 type ollamaMessage struct {
-	Role    string `json:"role"`
-	Content string `json:"content"`
+	Role       string      `json:"role"`
+	Content    string      `json:"content"`
+	ToolCallId string      `json:"tool_call_id,omitempty"`
+	ToolCalls  []ToolCalls `json:"tool_calls,omitempty"`
+	Name       string      `json:"name,omitempty"`
 }
+
 type IPAddress struct {
 	Type        string `json:"type"`
 	Description string `json:"description"`
@@ -61,33 +68,8 @@ type Tools struct {
 	Function Function `json:"function"`
 }
 
-type ollamaResponseStruct struct {
-	Model              string    `json:"model"`
-	CreatedAt          time.Time `json:"created_at"`
-	Message            message   `json:"message"`
-	Done               bool      `json:"done"`
-	DoneReason         string    `json:"done_reason"`
-	TotalDuration      int       `json:"total_duration"`
-	LoadDuration       int       `json:"load_duration"`
-	PromptEvalCount    int       `json:"prompt_eval_count"`
-	PromptEvalDuration int       `json:"prompt_eval_duration"`
-	EvalCount          int       `json:"eval_count"`
-	EvalDuration       int       `json:"eval_duration"`
-}
-
 type Arguments struct {
 	IPAddress string `json:"ip_address"`
-}
-type ToolCalls struct {
-	ID       string   `json:"id"`
-	Type     string   `json:"type"`
-	Function Function `json:"function"`
-}
-type message struct {
-	Role    string `json:"role"`
-	Content string `json:"content"`
-
-	ToolCalls []ToolCalls `json:"tool_calls"`
 }
 
 func SendRequest(url string, message string) error {
@@ -151,7 +133,7 @@ func SendRequest(url string, message string) error {
 	}
 	defer resp.Body.Close()
 
-	ollamaResponse := ollamaResponseStruct{}
+	ollamaResponse := &ollamaResponseStruct{}
 
 	/*
 		respStr, err := io.ReadAll(resp.Body)
@@ -162,11 +144,94 @@ func SendRequest(url string, message string) error {
 		fmt.Println(string(respStr))
 	*/
 
-	if err := json.NewDecoder(resp.Body).Decode(&ollamaResponse); err != nil {
+	if err := json.NewDecoder(resp.Body).Decode(ollamaResponse); err != nil {
+		return err
+	}
+
+	ollamaResponse, err = handleToolCalls(url, &ollamaReq, ollamaResponse)
+	if err != nil {
+		fmt.Printf("error for handleTollCalls(): %v\n", err)
 		return err
 	}
 
 	fmt.Printf("Response:\n%+v\n", ollamaResponse)
 
 	return nil
+}
+
+func handleToolCalls(url string, ollamaReq *ollamaRequest, ollamaResp *ollamaResponseStruct) (*ollamaResponseStruct, error) {
+	if ollamaResp == nil || ollamaReq == nil {
+		return nil, ErrEmptyOllamaStructValue
+	}
+
+	ollamaClient := &http.Client{
+		Timeout: 120 * time.Second,
+	}
+
+	cur_resp := ollamaResp
+	maxIterations := 5
+	curIter := 0
+	for len(cur_resp.Message.ToolCalls) != 0 || curIter != maxIterations { // if LLM responded with some Tool Calls
+		curIter += 1
+		for _, v := range cur_resp.Message.ToolCalls { // Loop through all the tool calls
+			switch v.Function.Name {
+			case "ip_threat_lookup": // For IP threat lookup do this
+
+				// Append tool call request and response in the original message, we want the entire history of message
+				ollamaReq.Messages = append(ollamaReq.Messages, cur_resp.Message)
+				ollamaReq.Messages = append(ollamaReq.Messages, ollamaMessage{
+					Role:       "tool",
+					ToolCallId: v.ID,
+					Name:       v.Function.Name,
+					Content:    "{\"status\": \"clean\", \"reputation_score\": 98, \"malware_reports\": 0}",
+				})
+			}
+		}
+
+		//fmt.Printf("Request after executing tool call: %+v\n", ollamaReq)
+		// Pretty print debug
+		p1, err := json.MarshalIndent(ollamaReq, "", "	")
+		if err != nil {
+			return nil, err
+		}
+		fmt.Println(string(p1))
+		fmt.Println("---------------------------------------------------------")
+
+		b, err := json.Marshal(&ollamaReq)
+		if err != nil {
+			return nil, err
+		}
+
+		req, err := http.NewRequest(http.MethodPost, url, bytes.NewReader(b))
+		if err != nil {
+			return nil, err
+		}
+		req.Header.Set("Content-Type", "Application/json")
+
+		resp, err := ollamaClient.Do(req)
+		if err != nil {
+			return nil, err
+		}
+
+		// Decoding it in current response
+		// This makes it difficult to reason about the conversation state and can leave old fields around if the next response doesn't overwrite them.
+		// A cleaner approach is to decode each response into a new variable.
+		// encoding/json does not reset fields that are absent from the incoming JSON when decoding into an existing struct.
+		//if err := json.NewDecoder(resp.Body).Decode(cur_resp); err != nil {
+		//	return nil, err
+		//}
+
+		nextResp := &ollamaResponseStruct{}
+		if err := json.NewDecoder(resp.Body).Decode(nextResp); err != nil {
+			resp.Body.Close()
+			return nil, err
+		}
+		cur_resp = nextResp
+
+		resp.Body.Close()
+	}
+
+	// We reach here if tool call is zero.
+	return cur_resp, nil
+
 }
